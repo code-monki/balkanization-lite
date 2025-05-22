@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timothy Collinson's Balkanization Lite</title>
+    
+    <style>
+        
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Tahoma, Helvetica, sans;
+        }
+        
+        .content-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: lightgrey;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-top: 1rem;
+            margin-bottom: 4rem;
+        }
+        
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .form-control-group {
+            padding-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        fieldset {
+            border: none;
+        }
+        fieldset:first-child {
+            padding-top: 1rem;
+        }
+        
+        button {
+            padding: .25rem .5rem;
+            width: 8rem;
+            height: 3rem;
+            border: 1px solid darkgrey;
+            border-radius: 1.25rem;
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+        
+        input[type="radio"] {
+            margin-right: .5rem;
+            vertical-align: middle;
+        }
+        
+        .result-div {
+            width: 100%;
+            max-width: 30rem;
+            margin-top: 3rem;
+        }
+        
+        .result-div h3 {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="content-container">
+        <h1>Timothy Collinson's<br>Balkanization Lite Generator</h1>
+        
+        <div class="form-div">
+        <form>
+                <fieldset>
+                    <div class="form-control-group">
+                    <input type="radio" id="decrease-consequequences" name="modifiers">Decrease Consequences (DM-1 on first die)</input>
+                    </div>
+                    <div class="form-control-group">
+                    <input type="radio" id="increase-consequequences" name="modifiers">Increase Consequences (DM+2 on first die)</input>
+                    </div>
+                </fieldset>
+                <div>
+                    <button id="generate">Generate</button>
+                </div>
+            </form>
+        </div>
+        
+        <div id="result" class="result-div">
+            
+        </div>
+    </div>
+    <script>
+        const d66Table = [
+        {
+          roll: 11,
+          leader: 'Different Units of Measurement',
+          result:
+            'Each region uses its own time, length, and weight system.  Getting paid or planning travel is a headache for calculation.',
+        },
+        {
+          roll: 12,
+          leader: 'Calendar Conflicts',
+          result:
+            'Two major regions use different calendars and argue over what year it is.',
+        },
+        {
+          roll: 13,
+          leader: 'Multiple Naming Systems',
+          result:
+            'The same location has different names in each province’s maps.  Even orbital nav systems can’t agree.',
+        },
+        {
+          roll: 14,
+          leader: 'Time Zones to the Extreme',
+          result:
+            'Dozens of local time zones based not on longitude but by culture or tradition.  Meeting someone on time is heroic.',
+        },
+        {
+          roll: 15,
+          leader: 'Currency Confusion',
+          result:
+            'Regions each have their own “local scrip” or cryptocurrency with wildly varying exchange rates.  Just to confuse things further, there is a (supposed) planetary currency and Imperial Credits may or may not be acceptable (and if they are, at very poor exchange rates).',
+        },
+        {
+          roll: 16,
+          leader: 'Minor Legal Divergence',
+          result:
+            'Gambling is legal in one district, punishable by fines in the next.  The same with nudity, alcohol, or handheld comms.',
+        },
+        {
+          roll: 21,
+          leader: '',
+          result:
+            'Customs Passports Required Moving between internal provinces requires minor paperwork, fees, or a “tourist visa” even for locals.',
+        },
+        {
+          roll: 22,
+          leader: 'Unofficial Borders',
+          result:
+            'Local militias or traditionalist groups enforce “historic” borders not recognized by the planetary government.',
+        },
+        {
+          roll: 23,
+          leader: 'Mild Embargo',
+          result:
+            'One province refuses to import anything from another for obscure historical reasons.  Travellers caught carrying those items may be fined.',
+        },
+        {
+          roll: 24,
+          leader: 'Flag Protocols',
+          result:
+            'Showing the wrong regional flag is a social faux pas or even a fineable offence.  All grounded ships are required to fly their own port registry flag at the stern and a courtesy flag of the local region midships(ish).  Local chandlers (and chancers) specialise in affixing fixed/retractable/demountable flagpoles to starships and spacecraft.',
+        },
+        {
+          roll: 25,
+          leader: 'Driver’s Nightmare',
+          result:
+            'Traffic laws and signage change at every border.  You may be expected to drive or fly on the left or right depending on the province.',
+        },
+        {
+          roll: 26,
+          leader: 'Nightlight Laws',
+          result:
+            'Some areas forbid light pollution; others are neon saturated.  Stargazing or sleeping habits are deeply political.',
+        },
+        {
+          roll: 31,
+          leader: 'Dialectical Divergence',
+          result:
+            'Each polity has legally recognized “language reforms”, meaning spelling and syntax vary widely across the planet.  The institutes that prescribe this are very touchy.',
+        },
+        {
+          roll: 32,
+          leader: 'Accent Policing',
+          result:
+            'Locals in each region are suspicious or mocking of outsiders who don’t mimic their dialect properly or at least make an effort.',
+        },
+        {
+          roll: 33,
+          leader: 'Title Rivalries',
+          result:
+            'Whether the head of state is a President, Premier, or Prince depends on where you are.  PCs interacting with senior officials will be expected to get protocols right.',
+        },
+        {
+          roll: 34,
+          leader: 'Honorific Etiquette',
+          result:
+            'Social customs around names and titles vary.  Getting it wrong is rude or scandalous.',
+        },
+        {
+          roll: 35,
+          leader: 'Politeness Standards',
+          result:
+            'In one place, eye contact is respectful; in another, it’s offensive.  A gesture can be a compliment or a curse.',
+        },
+        {
+          roll: 36,
+          leader: 'Dietary Territories',
+          result:
+            'One region bans meat, another bans artificial proteins, a third bans fruit imports.  Eating is political.',
+        },
+        {
+          roll: 41,
+          leader: 'Military Pageantry',
+          result:
+            'Each region has its own ceremonial guard or military uniform and insists on public displays for visitors.',
+        },
+        {
+          roll: 42,
+          leader: "Competing Monumental Projects",
+          result:
+            'Each region tries to outdo the others with colossal public works.  One has a 10km high statue of a poet.',
+        },
+        {
+          roll: 43,
+          leader: 'Climate Preferences',
+          result:
+            'Entire regions are terraformed to preferred climate types: dry, wet, temperate.  This is regardless of neighbouring zones.',
+        },
+        {
+          roll: 44,
+          leader: 'Odd Voting Laws',
+          result:
+            'In one polity, voting is mandatory; in another, it’s restricted by bloodline.  Locals quiz you about it constantly.',
+        },
+        {
+          roll: 45,
+          leader: 'Media Silos',
+          result:
+            'Regional media contradict each other so much that even the weather reports don’t agree.',
+        },
+        {
+          roll: 46,
+          leader: 'Street Naming Conventions',
+          result:
+            'Each region renames major streets on a political whim, often after recent celebrities or sports stars.',
+        },
+        {
+          roll: 51,
+          leader: 'Sacred Geometry',
+          result:
+            'Architecture and city planning follow radically different philosophies.  Angles in one region are “sinful”, spires in another are required.',
+        },
+        {
+          roll: 52,
+          leader: 'Border Snacks',
+          result:
+            'Each border crossing sells its own “national” snack.  Not buying one is frowned upon.',
+        },
+        {
+          roll: 53,
+          leader: 'Local Mythologies',
+          result:
+            'One region denies the others ever existed historically.  Their school textbooks reflect this.',
+        },
+        {
+          roll: 54,
+          leader: 'Animal Mascot Cultures',
+          result:
+            'Each region has a beloved native creature and/or common pet, and insulting it is akin to blasphemy.',
+        },
+        {
+          roll: 55,
+          leader: 'Civic Pride Overload',
+          result:
+            'Each city-state insists it invented some universal thing (like fried food, rock music, or democracy), and gets offended if contradicted.',
+        },
+        {
+          roll: 56,
+          leader: 'Sports Obsession',
+          result:
+            'Each region has its own version of a major sport with slightly different rules – and bitter rivalries.',
+        },
+        {
+          roll: 61,
+          leader: 'Fashion Laws',
+          result:
+            'Colours or garments are legally restricted to local residents.  Travellers may be accused of “style theft”.',
+        },
+        {
+          roll: 62,
+          leader: 'Song Wars',
+          result:
+            'Regional anthems are constantly being played loudly in public – often in competition with each other.',
+        },
+        {
+          roll: 63,
+          leader: 'Religious Hair Disputes',
+          result:
+            'One polity requires head coverings; its neighbour forbids them.  Travellers are caught in between.',
+        },
+        {
+          roll: 64,
+          leader: 'Face Paint or Tattoos',
+          result:
+            'Locals expect facial markings as regional identity – travellers may be mistaken for belonging somewhere they don’t.',
+        },
+        {
+          roll: 65,
+          leader: 'Art Style Disputes',
+          result:
+            "Each polity has a radically different take on aesthetics and art, and harshly criticizes the others' conceptions.",
+        },
+        {
+          roll: 66,
+          leader: 'Endemic Conspiracy Theories',
+          result:
+            'Each region believes a different conspiracy controls the rest of the planet.  They may try to recruit travellers to their truth.',
+        },
+      ];
+      
+      // generatate a number between 1 and 6 inclusive
+      function d6() {
+          return (Math.floor((Math.random() * 6) + 1));
+      }
+      
+      const decreaseRadioButton = document.getElementById('decrease-consequequences');
+      const increaseRadioButton = document.getElementById('increase-consequequences');
+      const resultDiv = document.getElementById('result')
+      const btn = document.getElementById('generate');
+      btn.addEventListener('click', (e) => {
+      
+          var d1 = d6();
+          var d2 = d6();
+          
+          e.preventDefault();
+          
+          if (decreaseRadioButton.checked == true) {
+            d1 = (d1 > 1) ? d1 - 1 : 1;
+            decreaseRadioButton.checked = false;
+          }
+          
+          if(increaseRadioButton.checked == true) {
+            d1 = (d1 < 5) ? d1 + 1 : 1;
+            increaseRadioButton.checked = false;
+          }
+          
+          result = d66Table.find(t => t.roll === (d1*10+d2));
+          
+          resultDiv.innerHTML = `<h3>${result.leader}</h3><p>${result.result}</p>`
+
+          
+      });
+    </script>
+</body>
+</html>
